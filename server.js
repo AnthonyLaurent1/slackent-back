@@ -8,28 +8,39 @@ app.use(cors());
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: "*" } 
+    cors: { origin: "*" }
 });
 
 io.on('connection', (socket) => {
-    const userId = socket.handshake.query.userId || "Anonyme";
-    console.log(`🔌 Nouveau socket connecté : ${socket.id} (User: ${userId})`);
+    const userId = socket.handshake.query.userId || 'Anonyme';
+    console.log(`🔌 Connecté : ${socket.id} (${userId})`);
 
     socket.on('send_message', (data) => {
-        console.log(`💬 Message reçu de ${userId}: ${data.text}`);
+        if (!data.text || typeof data.text !== 'string') return;
+
+        const text = data.text.trim().slice(0, 500);
+        if (!text) return;
+
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+
+        console.log(`💬 ${userId}: ${text}`);
 
         io.emit('receive_message', {
-            text: data.text,
+            text,
             sender: userId,
-            timestamp: new Date().toLocaleTimeString()
+            timestamp,
         });
     });
 
     socket.on('disconnect', () => {
-        console.log(`❌ Déconnexion de : ${socket.id}`);
+        console.log(`❌ Déconnecté : ${socket.id} (${userId})`);
     });
 });
 
 server.listen(3000, () => {
-    console.log('🔥 Serveur de chat actif sur http://localhost:3000');
+    console.log('🔥 Serveur chat actif sur http://localhost:3000');
 });

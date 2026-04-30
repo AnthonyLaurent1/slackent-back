@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String       @id
+  firstSeen DateTime     @default(now()) @map("first_seen")
+  ipAddress String?      @map("ip_address")
+  isOnline  Boolean      @default(true) @map("is_online")
+  logs      TrafficLog[]
+
+  @@map("users")
+}
+
+model TrafficLog {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  url       String?
+  content   String?
+  visitedAt DateTime @default(now()) @map("visited_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("traffic_logs")
+}

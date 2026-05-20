@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Contrôle de l'IA</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); width: 100%; max-width: 400px; }
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: #1D9E75; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa; }
+        input, select, button { width: 100%; padding: 10px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box; }
+        button { background: #1D9E75; border: none; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .status { font-size: 0.8rem; text-align: center; margin-top: 1rem; }
+        .success { color: #1D9E75; }
+        .error { color: #d85a30; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Configuration IA</h1>
+        
+        <label for="adminKey">Clé Admin</label>
+        <input type="password" id="adminKey" placeholder="Entrez votre clé admin">
+
+        <label for="tone">Ton de l'IA</label>
+        <select id="tone">
+            <option value="amical et serviable">Amical & Serviable</option>
+            <option value="sarcastique et drôle">Sarcastique & Drôle</option>
+            <option value="professionnel et sérieux">Professionnel & Sérieux</option>
+            <option value="mystérieux et énigmatique">Mystérieux</option>
+            <option value="agressif et colérique">Agressif (pour le fun)</option>
+            <option value="pirate des caraïbes">Pirate</option>
+        </select>
+
+        <label for="customTone">Ou ton personnalisé</label>
+        <input type="text" id="customTone" placeholder="Ex: Un robot dépressif">
+
+        <button onclick="updateTone()">Mettre à jour le ton</button>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        async function updateTone() {
+            const adminKey = document.getElementById('adminKey').value;
+            const toneSelect = document.getElementById('tone').value;
+            const customTone = document.getElementById('customTone').value;
+            const status = document.getElementById('status');
+            
+            const finalTone = customTone || toneSelect;
+
+            try {
+                const response = await fetch('http://localhost:3000/admin/tone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminKey, tone: finalTone })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    status.textContent = "Ton mis à jour avec succès !";
+                    status.className = "status success";
+                } else {
+                    status.textContent = "Erreur : " + data.error;
+                    status.className = "status error";
+                }
+            } catch (err) {
+                status.textContent = "Erreur de connexion au serveur";
+                status.className = "status error";
+            }
+        }
+    </script>
+</body>
+</html>
